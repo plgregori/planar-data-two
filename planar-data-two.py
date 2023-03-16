@@ -10,11 +10,13 @@ X = np.zeros((N*K,D)) # data matrix (each row = single example)
 y = np.zeros(N*K, dtype='uint8') # class labels (stored as unsigned 8-bit integers)
 for j in range(K):
   ix = range(N*j,N*(j+1))
-  r = np.linspace(0.0,1,N) # evenly spaced radial coordinate of the dots
-  t = np.linspace(j*4,(j+1)*4,N) + np.random.randn(N)*0.2 # evenly spaced angular coordinate of the dots, plus random noise
-  
-  #X[ix] = np.c_[r, np.sin(20*r)+2*j+np.random.randn(N)*0.2]
-  X[ix] = np.c_[r*np.cos(t), r*np.sin(t)]
+  #r = np.linspace(0.0,1,N) # This is for the spiral
+  #t = np.linspace(j*4,(j+1)*4,N) + np.random.randn(N)*0.2 This is for the spiral
+  t = np.linspace(0,6,N) # This is for the circles
+  r = 2*(j+1)  + np.random.randn(N)*0.4 # This is for the circles
+
+  X[ix] = np.c_[r*np.cos(t), r*np.sin(t)] # This is for the circles
+  #X[ix] = np.c_[r*np.cos(t), r*np.sin(t)] # This is for the spiral
   y[ix] = j
 # lets visualize the data:
 h = 0.02 # this is only necessary for later
