@@ -13,10 +13,20 @@ for j in range(K):
   r = np.linspace(0.0,1,N) # evenly spaced radial coordinate of the dots
   t = np.linspace(j*4,(j+1)*4,N) + np.random.randn(N)*0.2 # evenly spaced angular coordinate of the dots, plus random noise
   
+  #X[ix] = np.c_[r, np.sin(20*r)+2*j+np.random.randn(N)*0.2]
   X[ix] = np.c_[r*np.cos(t), r*np.sin(t)]
   y[ix] = j
 # lets visualize the data:
-plt.scatter(X[:, 0], X[:, 1],c=y, s=40, cmap=plt.cm.Spectral)
+h = 0.02 # this is only necessary for later
+
+x_min, x_max = X[:, 0].min() - 0.2, X[:, 0].max() + 0.2
+y_min, y_max = X[:, 1].min() - 0.2, X[:, 1].max() + 0.2
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                     np.arange(y_min, y_max, h))
+plt.scatter(X[:, 0], X[:, 1],c=y, s=40, cmap=plt.cm.Spectral,edgecolors='black')
+plt.title("Classification dataset", fontdict = {'fontsize' : 15})
+plt.xlim(xx.min(), xx.max())
+plt.ylim(yy.min(), yy.max())
 plt.show()
 
 # np.linspace(a,b,N) returns N evenly spaced number from a to b
@@ -83,8 +93,6 @@ for i in range(200):
 
 scores = np.dot(X, W) + b
 predicted_class = np.argmax(scores, axis=1)
-print(predicted_class)
-print(y)
 print('training accuracy: %.2f' % (np.mean(predicted_class == y)))
 
 # Finally, we print the decision boundaries associated with our prediction
@@ -97,19 +105,15 @@ print('training accuracy: %.2f' % (np.mean(predicted_class == y)))
 # plt.contourf takes as arguments two coordinate matrices, which generate a grid, and a color matrix, which assigns to each site in the grid a color
 # By setting alpha=0.8 we make the prediction slightly less transparent than the training dots
 
-h = 0.02
-x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                     np.arange(y_min, y_max, h))
 Z = np.dot(np.c_[xx.ravel(), yy.ravel()], W) + b
 Z = np.argmax(Z, axis=1)
 Z = Z.reshape(xx.shape)
 fig = plt.figure()
 plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.8)
-plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral, edgecolors='black')
 plt.xlim(xx.min(), xx.max())
 plt.ylim(yy.min(), yy.max())
+plt.title("Linear classifier decision boundaries", fontdict = {'fontsize' : 15})
 plt.show()
 
 # Train neural network
@@ -121,7 +125,7 @@ W2 = 0.01 * np.random.randn(h,K)
 b2 = np.zeros((1,K))
 
 # some hyperparameters
-step_size = 1e-0
+step_size = 1
 reg = 1e-3 # regularization strength
 
 # gradient descent loop
@@ -177,17 +181,13 @@ predicted_class = np.argmax(scores, axis=1)
 print('training accuracy: %.2f' % (np.mean(predicted_class == y)))
 
 # plot the resulting classifier
-h = 0.02
-x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                     np.arange(y_min, y_max, h))
 Z = np.dot(np.maximum(0, np.dot(np.c_[xx.ravel(), yy.ravel()], W) + b), W2) + b2
 Z = np.argmax(Z, axis=1)
 Z = Z.reshape(xx.shape)
 fig = plt.figure()
 plt.contourf(xx, yy, Z, cmap=plt.cm.Spectral, alpha=0.8)
-plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral)
+plt.scatter(X[:, 0], X[:, 1], c=y, s=40, cmap=plt.cm.Spectral,edgecolors='black')
+plt.title("2-layer neural network decision boundaries", fontdict = {'fontsize' : 15})
 plt.xlim(xx.min(), xx.max())
 plt.ylim(yy.min(), yy.max())
 plt.show()
