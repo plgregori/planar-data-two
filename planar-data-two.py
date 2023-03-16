@@ -116,60 +116,57 @@ plt.ylim(yy.min(), yy.max())
 plt.title("Linear classifier decision boundaries", fontdict = {'fontsize' : 15})
 plt.show()
 
-# Train neural network
+# We now train the 2-layer neural network
+# We start by setting some hyperparameters and initializing the parameters
 
 h = 100 # size of hidden layer
 W = 0.01 * np.random.randn(D,h)
 b = np.zeros((1,h))
 W2 = 0.01 * np.random.randn(h,K)
 b2 = np.zeros((1,K))
-
-# some hyperparameters
 step_size = 1
 reg = 1e-3 # regularization strength
 
-# gradient descent loop
+# We now implement the gradient descent
+
 num_examples = X.shape[0]
 for i in range(10000):
   
-  # evaluate class scores, [N x K]
-  hidden_layer = np.maximum(0, np.dot(X, W) + b) # note, ReLU activation
+  # The scores are now computed by first evaluating the hidden layer with ReLU activation
+  hidden_layer = np.maximum(0, np.dot(X, W) + b)
   scores = np.dot(hidden_layer, W2) + b2
   
-  # compute the class probabilities
+  # Probabilities and loss function are computed exactly like before
   exp_scores = np.exp(scores)
-  probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # [N x K]
-  
-  # compute the loss: average cross-entropy loss and regularization
+  probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
   corect_logprobs = -np.log(probs[range(num_examples),y])
   data_loss = np.sum(corect_logprobs)/num_examples
-  reg_loss = 0.5*reg*np.sum(W*W) + 0.5*reg*np.sum(W2*W2)
+  reg_loss = 0.5*reg*np.sum(W*W) + 0.5*reg*np.sum(W2*W2) # Note the extra regularization coming from the hidden layer
   loss = data_loss + reg_loss
   if i % 1000 == 0:
     print("iteration %d: loss %f" % (i, loss))
   
-  # compute the gradient on scores
+  # Also the first part of backpropagation is the same as before
   dscores = probs
   dscores[range(num_examples),y] -= 1
   dscores /= num_examples
   
-  # backpropate the gradient to the parameters
-  # first backprop into parameters W2 and b2
+  # And the backpropagation of the output layer is as before, replacing X with hidden_layer
   dW2 = np.dot(hidden_layer.T, dscores)
   db2 = np.sum(dscores, axis=0, keepdims=True)
-  # next backprop into hidden layer
+  # The new derivatives are obtained in a straightforward way (see notes)
   dhidden = np.dot(dscores, W2.T)
-  # backprop the ReLU non-linearity
+  # In order to implement the derivative of the ReLU function, we first create the boolean matrix 'hidden_layer <= 0'
+  # Then we use it to set to zero all entries of dhidden corresponding to negative values of hidden_layer
   dhidden[hidden_layer <= 0] = 0
-  # finally into W,b
   dW = np.dot(X.T, dhidden)
   db = np.sum(dhidden, axis=0, keepdims=True)
   
-  # add regularization gradient contribution
+  # We then add the regularization contributions
   dW2 += reg * W2
   dW += reg * W
   
-  # perform a parameter update
+  # And update the parameters
   W += -step_size * dW
   b += -step_size * db
   W2 += -step_size * dW2
@@ -180,7 +177,8 @@ scores = np.dot(hidden_layer, W2) + b2
 predicted_class = np.argmax(scores, axis=1)
 print('training accuracy: %.2f' % (np.mean(predicted_class == y)))
 
-# plot the resulting classifier
+# We end by plotting the decision boundaries 
+
 Z = np.dot(np.maximum(0, np.dot(np.c_[xx.ravel(), yy.ravel()], W) + b), W2) + b2
 Z = np.argmax(Z, axis=1)
 Z = Z.reshape(xx.shape)
